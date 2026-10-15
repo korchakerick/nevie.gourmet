@@ -16,9 +16,26 @@ function orderMessage(product, option) {
 function whatsappURL(message) {
   return `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(message)}`;
 }
+// Recorte apenas na exibição: o JPEG fornecido permanece intacto e é compartilhado por todos os cartões.
+function imageMarkup(photo, id) {
+  if (!photo.image) return '';
+  if (!photo.crop) return `<div class="photo-asset"><img src="${escapeHTML(photo.image)}" alt="${escapeHTML(photo.alt)}" loading="lazy" decoding="async" width="600" height="750"></div>`;
+  const [x, y, width, height] = photo.crop;
+  const clipId = `photo-clip-${id}`;
+  return `<div class="photo-asset"><svg class="photo-crop" viewBox="${x} ${y} ${width} ${height}" role="img" aria-label="${escapeHTML(photo.alt)}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${width}" height="${height}"/></clipPath></defs><image href="${escapeHTML(photo.image)}" width="${config.menuImage.width}" height="${config.menuImage.height}" clip-path="url(#${clipId})"/></svg></div>`;
+}
+function watchPhoto(container) {
+  const asset = container.querySelector('.photo-asset');
+  const image = asset?.querySelector('img, image');
+  if (!image) return;
+  const showPhoto = () => container.classList.add('has-photo');
+  const showPlaceholder = () => { container.classList.remove('has-photo'); asset.remove(); };
+  image.addEventListener('load', showPhoto);
+  image.addEventListener('error', showPlaceholder);
+  if (image instanceof HTMLImageElement && image.complete) image.naturalWidth ? showPhoto() : showPlaceholder();
+}
 function photoMarkup(product) {
-  const placeholder = '<div class="photo-placeholder"><span class="photo-symbol" aria-hidden="true">✧</span><span>Foto real em breve</span><small>NÉVIE GOURMET</small></div>';
-  return `${placeholder}${product.image ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.alt)}" loading="lazy" decoding="async" width="600" height="750">` : ''}`;
+  return `<div class="photo-placeholder"><span class="photo-symbol" aria-hidden="true">✧</span><span>Foto indisponível</span><small>NÉVIE GOURMET</small></div>${imageMarkup(product, product.id)}`;
 }
 
 config.products.forEach(product => {
@@ -27,12 +44,19 @@ config.products.forEach(product => {
   card.dataset.productId = product.id;
   const optionsMarkup = product.options.length > 1
     ? `<fieldset><legend>Escolha sua versão</legend>${product.options.map((option, index) => `<label><input type="radio" name="${escapeHTML(product.id)}" value="${index}" ${index === 0 ? 'checked' : ''}><span>${escapeHTML(option.label)}${option.alcohol ? ' <small>18+</small>' : ''}</span><strong>${money(option.price)}</strong></label>`).join('')}</fieldset>`
-    : '<p class="single-option">Seu açaí, seu creme favorito.</p>';
+    : '<p class="single-option">Açaí de garrafa · pronto para refrescar.</p>';
   card.innerHTML = `<div class="product-image">${photoMarkup(product)}<span class="size">${escapeHTML(product.size)}</span></div><div class="product-content"><p class="eyebrow">${product.category === 'acai' ? 'AÇAÍ GOURMET' : 'BATIDINHA GOURMET'}</p><h4>${escapeHTML(product.category === 'acai' ? product.name : product.flavor)}</h4><p class="product-description">${escapeHTML(product.description)}</p>${optionsMarkup}<div class="selected-price"><strong>${money(product.options[0].price)}</strong><span>${product.options[0].label || product.size}</span></div><a class="button order-button" target="_blank" rel="noopener noreferrer">Pedir pelo WhatsApp <svg class="arrow-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10"/></svg></a><p class="selection-status sr-only" role="status"></p></div>`;
   const link = card.querySelector('.order-button');
   const selected = () => product.options[Number(card.querySelector('input:checked')?.value ?? 0)];
   function updateSelection(announce = false) {
     const option = selected();
+    if (announce && option.crop) {
+      const container = card.querySelector('.product-image');
+      container.querySelector('.photo-asset')?.remove();
+      container.classList.remove('has-photo');
+      container.insertAdjacentHTML('beforeend', imageMarkup({ ...product, crop: option.crop, alt: `${product.alt}, ${option.label.toLowerCase()}` }, product.id));
+      watchPhoto(container);
+    }
     link.href = whatsappURL(orderMessage(product, option));
     link.setAttribute('aria-label', `Pedir pelo WhatsApp: ${product.name}, ${product.size}${option.label ? `, ${option.label}` : ''}, ${money(option.price)}`);
     card.querySelector('.selected-price strong').textContent = money(option.price);
@@ -48,6 +72,7 @@ config.products.forEach(product => {
   });
   updateSelection();
   document.querySelector(product.category === 'acai' ? '#acai-list' : '#product-list').append(card);
+  watchPhoto(card.querySelector('.product-image'));
 });
 
 function openOrder(product, option) {
@@ -128,16 +153,8 @@ if (config.logo) {
 }
 Object.entries(config.heroImages).forEach(([category, source]) => {
   if (!source) return;
-  const image = document.createElement('img');
-  image.src = source;
-  image.alt = category === 'acai' ? 'Açaí gourmet da Névie Gourmet' : 'Batidinhas gourmet da Névie Gourmet';
-  image.decoding = 'async';
-  document.querySelector(`[data-hero-photo="${category}"]`).append(image);
-});
-document.querySelectorAll('.product-image img, .hero-photo img').forEach(image => {
-  const showPhoto = () => image.parentElement.classList.add('has-photo');
-  const showPlaceholder = () => { image.parentElement.classList.remove('has-photo'); image.remove(); };
-  image.addEventListener('load', showPhoto);
-  image.addEventListener('error', showPlaceholder);
-  if (image.complete) image.naturalWidth ? showPhoto() : showPlaceholder();
+  const photo = typeof source === 'string' ? { image: source, alt: `Produto da Névie Gourmet` } : source;
+  const container = document.querySelector(`[data-hero-photo="${category}"]`);
+  container.insertAdjacentHTML('beforeend', imageMarkup(photo, `hero-${category}`));
+  watchPhoto(container);
 });

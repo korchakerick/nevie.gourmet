@@ -6,8 +6,8 @@ Aprimoramento do site existente em HTML, CSS e JavaScript puro, sem instalação
 
 - `index.html`: slogan oficial, destaque equivalente para açaís e batidinhas, categorias separadas, sobre a marca sem história inventada, informações de entrega e retirada, contatos oficiais e botão flutuante acessível.
 - `config.js`: WhatsApp `5565996029670`, Instagram oficial e catálogo completo de 300 ml. Quatro açaís a R$ 16,00; maracujá e morango nas versões sem álcool (R$ 14,00) e com álcool (R$ 16,00). Seis cartões representam oito combinações de compra.
-- `app.js`: mensagens personalizadas e codificadas com `encodeURIComponent`, preço correspondente à seleção, links diretos `wa.me`, confirmação de maioridade para álcool, menu móvel, fotos reais configuráveis e fallback caso uma foto não carregue.
-- `styles.css`: aprimoramento da estrutura existente com creme e dourado, boa legibilidade, áreas de toque, foco visível, animações discretas e respeito à preferência de movimento reduzido. Sem fontes ou fotografias externas.
+- `app.js`: mensagens personalizadas e codificadas com `encodeURIComponent`, preço correspondente à seleção, links diretos `wa.me`, confirmação de maioridade para álcool, menu móvel, logo oficial, fotografias do cardápio, enquadramento por versão e fallback caso uma foto não carregue.
+- `styles.css`: aprimoramento da estrutura existente com creme e dourado, boa legibilidade, áreas de toque, foco visível, animações discretas e respeito à preferência de movimento reduzido. Sem fontes ou fotografias externas. Usa os anexos oficiais armazenados em `assets/`.
 - `README.md`: instruções de revisão, manutenção e publicação manual.
 
 Não foram criados pagamentos online, avaliações, dados de fundação, endereço de retirada ou promessas de entrega.
@@ -32,25 +32,26 @@ Abrir localmente não publica o site. Para simular celular, abra as ferramentas 
 
 ### Verificações realizadas nesta atualização
 
-Sintaxe de `app.js` e `config.js` e `git diff --check` passaram. Testes em Chromium local verificaram as oito combinações de nome, volume, preço e versão nas URLs, atualização dos preços, confirmação de maioridade, menu móvel, âncoras e ausência de erros JavaScript. Não houve rolagem horizontal nas larguras 320, 375, 390, 768, 1024 e 1440 pixels. Capturas de desktop e celular foram inspecionadas. Os destinos WhatsApp foram interceptados para verificar a navegação sem enviar mensagens; a URL do Instagram foi conferida, sem validar o conteúdo do perfil. A execução foi local, sem publicação no Pages e sem revisão em aparelhos físicos.
+Sintaxe de `app.js` e `config.js` e `git diff --check` passaram. Testes em Chromium local verificaram as oito combinações de nome, volume, preço e versão nas URLs, atualização dos preços, confirmação de maioridade, menu móvel, âncoras e ausência de erros JavaScript. A atualização com os anexos também verificou o carregamento das oito áreas de foto, das logos e a troca de enquadramento entre as versões de cada batidinha. Não houve rolagem horizontal nas larguras 320, 375, 390, 768, 1024 e 1440 pixels. Capturas de desktop e celular foram inspecionadas. Os destinos WhatsApp foram interceptados para verificar a navegação sem enviar mensagens; a URL do Instagram foi conferida, sem validar o conteúdo do perfil. A execução foi local, sem publicação no Pages e sem revisão em aparelhos físicos.
 
-## Fotos e identidade visual pendentes
+## Logo e fotografias oficiais aplicadas
 
-O cardápio mencionado não estava disponível entre os anexos acessíveis nesta conversa. Por isso, **não foi possível extrair as fotografias nem conferir a logo e os tons exatos da referência**. Os tons creme e dourado seguem a descrição fornecida. A assinatura tipográfica existente foi mantida provisoriamente, sem apresentá-la como a logo oficial. Fotos genéricas da versão anterior foram removidas. Não há imagens artificiais de produtos.
+Os dois anexos fornecidos foram incorporados sem alterar os arquivos originais:
 
-Para concluir a fidelidade visual, forneça o cardápio em boa resolução ou, preferencialmente:
+- `assets/logo-nevie.jpg`: logo oficial, usada no cabeçalho, rodapé e seção da marca. A borda circular é apresentada com CSS, sem deformar ou redesenhar a logo.
+- `assets/cardapio-nevie.jpg`: cardápio original (853 × 1280), compartilhado por todas as fotografias do catálogo e da apresentação. Os dois arquivos somam aproximadamente 323 KiB.
 
-- Logo oficial em SVG, PNG ou WebP com transparência.
-- Fotografias individuais dos quatro açaís e das duas batidinhas, preservando rótulos e embalagens reais. Se houver embalagens diferentes entre as versões alcoólicas e não alcoólicas, envie também essas fotos para adaptar a seleção visual.
-- Códigos das cores oficiais, se disponíveis.
+Os enquadramentos usam SVG na própria página para mostrar apenas a região correspondente a cada produto, preservando os pixels e as proporções do JPEG. Não há remoção de fundo, reconstrução, geração artificial ou alteração de garrafas, rótulos e cremes. O navegador reutiliza o mesmo arquivo do cardápio em todos os cartões. As versões com e sem álcool têm enquadramentos próprios: a foto acompanha a seleção.
 
-Coloque as fotos otimizadas em `assets/` e preencha o campo `image` e o texto `alt` de cada produto em `config.js`. Use caminhos como `assets/acai-ninho.webp`, sem barra inicial. As imagens usam `object-fit: contain`: mantêm proporção e embalagem inteira. Não são recortadas nem deformadas. Enquanto o caminho estiver vazio ou inválido, aparece “Foto real em breve”.
+`config.js` contém `image` (caminho do arquivo) e `crop` (coordenadas `[x, y, largura, altura]`) de cada produto. Para as batidinhas, `options[].crop` seleciona a garrafa correspondente à versão. `menuImage` define as dimensões da imagem original. `heroImages` usa o mesmo modelo com `image`, `crop` e `alt`. O visual creme, dourado e escuro foi ajustado à referência fornecida; códigos oficiais de marca, se existirem, podem refiná-lo futuramente.
 
-Em `config.js`, preencha `logo` com o caminho da marca oficial e `heroImages.acai` / `heroImages.batidinhas` com fotografias reais para o destaque inicial. A logo aparece no cabeçalho e no rodapé, preservando as proporções. Não é necessário gerar imagens provisórias.
+As fotos extraídas do cardápio têm resolução limitada pela arte original. **Não falta nenhum arquivo para usar esta versão.** Fotos individuais em maior resolução são opcionais e melhorarão a nitidez nas telas maiores. Para substituí-las, coloque os arquivos em `assets/`, atualize `image` e `alt`, e remova `crop` do produto e de suas opções para exibir a foto inteira com `object-fit: contain`. Caso a embalagem mude por versão, é possível continuar usando as coordenadas do cardápio ou adaptar a fonte de imagem de cada opção. Não é necessário comprar ferramentas ou serviços.
+
+O texto agora identifica os açaís como açaís de garrafa, em conformidade com o cardápio. Os preços e contatos anteriores foram mantidos.
 
 ## Manutenção
 
-`config.js` concentra contatos, texto de atendimento, caminhos de imagens e produtos. Para adicionar produtos, copie um item de `products`, escolha um `id` único e a categoria `acai` ou `batidinhas`, e preencha nome, descrição, tamanho e opções. Cada opção contém `label`, `price` e `alcohol`. Para uma única opção de açaí, deixe `label` vazio. Atualize os textos de contagem e resumo de preços das categorias em `index.html` se o catálogo mudar. O slogan e os textos institucionais ficam no HTML. As cores ficam nas variáveis do início de `styles.css`.
+`config.js` concentra contatos, texto de atendimento, caminhos de imagens, enquadramentos e produtos. Para adicionar produtos, copie um item de `products`, escolha um `id` único e a categoria `acai` ou `batidinhas`, e preencha nome, descrição, tamanho e opções. Cada opção contém `label`, `price` e `alcohol`. Para uma única opção de açaí, deixe `label` vazio. Atualize os textos de contagem e resumo de preços das categorias em `index.html` se o catálogo mudar. O slogan e os textos institucionais ficam no HTML. As cores ficam nas variáveis do início de `styles.css`.
 
 Nenhum outro dado comercial é necessário para usar os links de pedido atuais. Endereço específico de retirada, horários e prazo de entrega só devem ser acrescentados caso a empresa forneça essas informações; atualmente tudo é combinado pelo WhatsApp.
 
